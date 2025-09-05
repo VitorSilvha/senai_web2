@@ -32,9 +32,37 @@
         
   <button onclick="criarCliente()">Adicionar</button>
 
+   <button onclick="buscarCliente()">Buscar</button>
+
+
    <h3>Listagem de Cliente </h3>
-  <div id="listaClientes"></div> 
+  <div id="listaClientes"></div>
   
+  <hr>
+
+  <h3>Buscar Cliente</h3>
+
+  <table>
+<tr>
+	<td> Nome: </td>
+   	<td><input type="text" id="nomeBusca" size="50" ><br></td>
+</tr>
+<tr>
+	<td>Email: </td>
+  	<td><input type="text" id="emailBusca" size="50"><br></td>
+</tr>
+<tr>
+  	<td>CPF:</td>
+   	<td><input type="text" id="cpfBusca" size="20"> <br></td>
+</tr>
+<tr>
+  	<td>CEP: </td>
+  	<td><input type="text" id="cepBusca" size="50"><br></td>
+</tr>
+</table>  
+        
+  <button onclick="buscarCliente()">Buscar</button>
+
 </body>
 
 </html>
@@ -86,6 +114,61 @@ async function criarCliente() {
   ;
   
   	carregarClientes(); // Atualiza a lista de clientes
+}
+
+
+async function buscarCliente() {
+	const nome = document.getElementById("nomeBusca").value;
+	const email = document.getElementById("emailBusca").value;
+  	const cpf = document.getElementById("cpfBusca").value;
+  	const cep = document.getElementById("cepBusca").value;
+
+	// Monta a query string (ex: ?nome=Joao&email=teste@ex.com)
+	const params = new URLSearchParams({
+		nome: nome,
+		email: email,
+		cpf: cpf,
+		cep: cep
+	});
+
+	// Chama a API com os filtros na URL
+	const response = await fetch(`${urlAPI}/buscar?${params.toString()}`);
+	if (response.ok) {
+		const clientes = await response.json();
+		exibirClientes(clientes); // função auxiliar para mostrar resultado
+	} else {
+		const erro = await response.text();
+		alert("Erro na busca:\n" + erro);
+	}
+}
+
+function exibirClientes(clientes) {
+	const listaClientes = document.getElementById("listaClientes");
+	listaClientes.innerHTML = ""; // Limpa a lista
+
+	if (clientes.length === 0) {
+		listaClientes.innerHTML = "Nenhum cliente encontrado.";
+		return;
+	}
+
+	let linhas = "<tr><th>Nome</th><th>Email</th><th>CPF</th><th>CEP</th><th>Ação</th></tr>";
+
+	clientes.forEach(cliente => {
+		linhas += `
+			<tr>
+				<td>${cliente.nome}</td>
+				<td>${cliente.email}</td>
+				<td>${cliente.cpf}</td>
+				<td>${cliente.cep}</td>
+				<td>
+					<button onclick="editarTarefa(${cliente.id})">Editar</button>
+					<button onclick="excluirCliente(${cliente.id}, '${cliente.nome}')">Excluir</button>
+				</td>
+			</tr>
+		`;
+	});
+
+	listaClientes.innerHTML = `<table border="1">${linhas}</table>`;
 }
 
 //Função para carregar os clientes 

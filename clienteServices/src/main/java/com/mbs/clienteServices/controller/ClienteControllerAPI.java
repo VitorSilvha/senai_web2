@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.mbs.clienteServices.entidades.Cliente;
 
@@ -58,5 +58,44 @@ public class ClienteControllerAPI {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 	}
 	
+	@RequestMapping(value = "/v1/cliente/buscar", method = RequestMethod.GET)
+	public ResponseEntity<List<Cliente>> buscarCliente(
+	    @RequestParam(required = false) String nome,
+	    @RequestParam(required = false) String email,
+	    @RequestParam(required = false) String cpf,
+	    @RequestParam(required = false) String cep
+	) {
+	    System.out.println("Executando buscarCliente com filtros:");
+	    System.out.println("nome: " + nome + ", email: " + email + ", cpf: " + cpf + ", cep: " + cep);
+
+	    List<Cliente> resultado = new ArrayList<>();
+
+	    for (Cliente c : listaCliente) {
+	        boolean matches = true;
+
+	        if (nome != null && !nome.isEmpty() && !c.getNome().toLowerCase().contains(nome.toLowerCase())) {
+	            matches = false;
+	        }
+
+	        if (email != null && !email.isEmpty() && !c.getEmail().toLowerCase().contains(email.toLowerCase())) {
+	            matches = false;
+	        }
+
+	        if (cpf != null && !cpf.isEmpty() && !c.getCpf().contains(cpf)) {
+	            matches = false;
+	        }
+
+	        if (cep != null && !cep.isEmpty() && !c.getCep().contains(cep)) {
+	            matches = false;
+	        }
+
+	        if (matches) {
+	            resultado.add(c);
+	        }
+	    }
+
+	    return ResponseEntity.ok(resultado);
+	}
+
 	// SEGUIR IMPLEMENTACAO
 }
