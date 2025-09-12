@@ -2,7 +2,7 @@ package com.mbs.vendasServices.entidades;
 
 public class Venda {
 
-	private Integer numeroVenda;
+	/* private Integer numeroVenda; */
 	private Integer codCliente;
 	private String nomeProduto;
 	private Double precoProduto;
@@ -19,12 +19,11 @@ public class Venda {
 	public void setNomeProduto(String nomeProduto) {
 		this.nomeProduto = nomeProduto;
 	}
-	public Integer getNumeroVenda() {
-		return numeroVenda;
-	}
-	public void setNumeroVenda(Integer numeroVenda) {
-		this.numeroVenda = numeroVenda;
-	}
+
+	/*
+	 * public Integer getNumeroVenda() { return numeroVenda; } public void
+	 * setNumeroVenda(Integer numeroVenda) { this.numeroVenda = numeroVenda; }
+	 */
 	public Double getPrecoProduto() {
 		return precoProduto;
 	}

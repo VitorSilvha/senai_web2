@@ -15,87 +15,117 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.mbs.clienteServices.entidades.Cliente;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 @Controller
 @CrossOrigin(origins = "http://localhost:9005")
 public class ClienteControllerAPI {
 
 	private List<Cliente> listaCliente = new ArrayList<Cliente>();
 	private static Integer id = 0;
+
 	
 	
-	@RequestMapping(value = "/v1/cliente",method = RequestMethod.POST)
+	@Operation(summary = "Salva um cliente")
+	@ApiResponses(value = 
+			{@ApiResponse(responseCode = "200", description = "Cadastro com sucesso"),
+			@ApiResponse(responseCode = "400", description = "Erro na validação dos campos")})
+	@RequestMapping(value = "/v1/cliente", method = RequestMethod.POST)
 	public ResponseEntity<String> salvar(@RequestBody Cliente cliente) {
 		System.out.println("executando salvar " + cliente);
-		
 		// simples validacao de negocio
-		if(cliente.getNome() == null || ( cliente.getNome() != null && cliente.getNome().length() <=2 )){
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST). body("Nome do cliente deve ter no minimo 3 caracteres");
+		if (cliente.getNome() == null || (cliente.getNome() != null && cliente.getNome().length() <= 2)) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+					.body("Nome do cliente deve ter no minimo 3 caracteres");
 		}
 		// cria um id para o cliente
 		cliente.setId(++id);
 		// adiciona na lista
 		listaCliente.add(cliente);
-		//retorna para o cliente o status ok e o id do cliente cadastrado.
+		// retorna para o cliente o status ok e o id do cliente cadastrado.
 		return ResponseEntity.ok(id.toString());
 	}
 	
-	@RequestMapping(value = "/v1/cliente",method = RequestMethod.GET)
+	@Operation(summary = "Retorna uma lista de todos os clientes cadastrados")
+	@ApiResponses(value = 
+			{@ApiResponse(responseCode = "200", description = "Lista de clientes")})
+	@RequestMapping(value = "/v1/cliente", method = RequestMethod.GET)
 	public ResponseEntity<List<Cliente>> listar() {
-		System.out.println("executando listar " );
+		System.out.println("executando listar ");
 		// retorna a lista de clientes
 		return ResponseEntity.ok(listaCliente);
 	}
 	
-	@RequestMapping(value = "/v1/cliente/{id}",method = RequestMethod.DELETE)
+	@Operation(summary = "Deletar um cliente pelo id")
+	@ApiResponses(value = 
+			{@ApiResponse(responseCode = "200", description = "Cliente deletado com sucesso"),
+			@ApiResponse(responseCode = "400", description = "Não encontrado o cliente para efetuar o delete")})
+	@RequestMapping(value = "/v1/cliente/{id}", method = RequestMethod.DELETE)
 	public ResponseEntity<Void> deletar(@PathVariable Integer id) {
-		System.out.println("executando deletar de cliente id " + id );
+		System.out.println("executando deletar de cliente id " + id);
 		// deleta o cliente pelo id, caso ele exista
-		boolean resultado = listaCliente.removeIf( (obj) ->  obj.getId().equals(id));
-		if(resultado == true) {
+		boolean resultado = listaCliente.removeIf((obj) -> obj.getId().equals(id));
+		if (resultado == true) {
 			return ResponseEntity.status(HttpStatus.OK).build();
 		}
 		// retorna a lista de clientes
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 	}
+
+	@Operation(summary = "Retorna um true caso o cliente exista ou um false caso o cliente não existe")
+	@ApiResponses(value = 
+			{@ApiResponse(responseCode = "200", description = "true = Cliente existe"),
+			@ApiResponse(responseCode = "400", description = "false = Cliente n existe")})
+	@RequestMapping(value = "/v1/cliente/existe_cliente", method = RequestMethod.GET)
+	public ResponseEntity<Boolean> existeCliente(@RequestBody Cliente cliente) {
+
+		System.out.println("Verificando a existencia do Cliente id " + cliente.getNome());
+
+		for (Cliente clint : listaCliente) {
+			if (cliente.getId().equals(clint.getId())) {
+				return ResponseEntity.ok(true);
+			}
+		}
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+	}
 	
-	@RequestMapping(value = "/v1/cliente/buscar", method = RequestMethod.GET)
-	public ResponseEntity<List<Cliente>> buscarCliente(
-	    @RequestParam(required = false) String nome,
-	    @RequestParam(required = false) String email,
-	    @RequestParam(required = false) String cpf,
-	    @RequestParam(required = false) String cep
-	) {
-	    System.out.println("Executando buscarCliente com filtros:");
-	    System.out.println("nome: " + nome + ", email: " + email + ", cpf: " + cpf + ", cep: " + cep);
+	@Operation(summary = "Retorna um cliente pelo o seu ID")
+	@ApiResponses(value = 
+			{@ApiResponse(responseCode = "200", description = "Cliente buscado com sucesso"),
+			@ApiResponse(responseCode = "400", description = "Não encontrado o cliente")})
+	@RequestMapping(value = "/v1/cliente/buscar_cliente", method = RequestMethod.GET)
+	public ResponseEntity<String> buscarCliente(@RequestBody Cliente cliente) {
 
-	    List<Cliente> resultado = new ArrayList<>();
+		System.out.println("Verificando a existencia do Cliente id " + cliente.getNome());
 
-	    for (Cliente c : listaCliente) {
-	        boolean matches = true;
-
-	        if (nome != null && !nome.isEmpty() && !c.getNome().toLowerCase().contains(nome.toLowerCase())) {
-	            matches = false;
-	        }
-
-	        if (email != null && !email.isEmpty() && !c.getEmail().toLowerCase().contains(email.toLowerCase())) {
-	            matches = false;
-	        }
-
-	        if (cpf != null && !cpf.isEmpty() && !c.getCpf().contains(cpf)) {
-	            matches = false;
-	        }
-
-	        if (cep != null && !cep.isEmpty() && !c.getCep().contains(cep)) {
-	            matches = false;
-	        }
-
-	        if (matches) {
-	            resultado.add(c);
-	        }
-	    }
-
-	    return ResponseEntity.ok(resultado);
+		for (Cliente c : listaCliente) {
+			if (cliente.getId().equals(c.getId())) {
+				return ResponseEntity.ok(cliente.toString());
+			}
+		}
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("achamo n");
 	}
 
-	// SEGUIR IMPLEMENTACAO
+	@Operation(summary = "Atualiza um cliente")
+	@ApiResponses(value = 
+			{@ApiResponse(responseCode = "200", description = "Cliente atualizado com sucesso"),
+			@ApiResponse(responseCode = "400", description = "Não encontrado o cliente para efetuar a atualização")})
+	@RequestMapping(value = "/v1/cliente", method = RequestMethod.PUT)
+	public ResponseEntity<String> atualizarCliente(@RequestBody Cliente cliente) {
+
+		System.out.println("Verificando a existencia do Cliente id " + cliente.getNome());
+
+		for (Cliente c : listaCliente) {
+			if (cliente.getId().equals(c.getId())) {
+				c.setNome(cliente.getNome());
+				c.setEmail(cliente.getEmail());
+				c.setCep(cliente.getCep());
+				c.setCpf(cliente.getCpf());
+				return ResponseEntity.ok(cliente.toString());
+			}
+		}
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("atualizamo n");
+	}
 }
