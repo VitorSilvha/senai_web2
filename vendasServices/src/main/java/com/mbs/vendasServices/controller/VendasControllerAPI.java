@@ -42,7 +42,7 @@ public class VendasControllerAPI {
 	}
 	
 	@RequestMapping(value = "/v1/venda/total_vendas", method = RequestMethod.GET)
-	public ResponseEntity<Double> buscarCliente(Venda venda) {
+	public ResponseEntity<Double> totalVendas(Venda venda) {
 		System.out.println("Verificando o total de vendas");
 		for (Venda v : listaProduto) {
 			if (venda.getPrecoProduto() != null) {

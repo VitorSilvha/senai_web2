@@ -1,131 +1,114 @@
 package com.mbs.clienteServices.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.mbs.clienteServices.entidades.Cliente;
+import com.mbs.clienteServices.service.ClienteService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
-@Controller
+// camada de entrada (API)
+@RestController
 @CrossOrigin(origins = "http://localhost:9005")
 public class ClienteControllerAPI {
 
-	private List<Cliente> listaCliente = new ArrayList<Cliente>();
-	private static Integer id = 0;
-
-	
+	@Autowired
+	private ClienteService clienteService;  // injeção de dependência.
 	
 	@Operation(summary = "Salva um cliente")
 	@ApiResponses(value = 
-			{@ApiResponse(responseCode = "200", description = "Cadastro com sucesso"),
-			@ApiResponse(responseCode = "400", description = "Erro na validação dos campos")})
-	@RequestMapping(value = "/v1/cliente", method = RequestMethod.POST)
+			{@ApiResponse(responseCode = "200",description = "Cadastro com sucesso"),
+			@ApiResponse(responseCode = "400",description = "Erro na validação dos campos")})
+	@RequestMapping(value = "/v1/cliente",method = RequestMethod.POST)
 	public ResponseEntity<String> salvar(@RequestBody Cliente cliente) {
-		System.out.println("executando salvar " + cliente);
-		// simples validacao de negocio
-		if (cliente.getNome() == null || (cliente.getNome() != null && cliente.getNome().length() <= 2)) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-					.body("Nome do cliente deve ter no minimo 3 caracteres");
+		System.out.println("executando salvar na controler: " + cliente);
+		
+		try {
+			String id = clienteService.salvar(cliente);
+			//retorna para o cliente o status ok 
+			// e o id do cliente cadastrado.
+			return ResponseEntity.ok(id);
+		} catch (Exception e) {
+			return ResponseEntity
+					.status(HttpStatus.BAD_REQUEST)
+					.body(e.getMessage());
 		}
-		// cria um id para o cliente
-		cliente.setId(++id);
-		// adiciona na lista
-		listaCliente.add(cliente);
-		// retorna para o cliente o status ok e o id do cliente cadastrado.
-		return ResponseEntity.ok(id.toString());
 	}
 	
-	@Operation(summary = "Retorna uma lista de todos os clientes cadastrados")
+	@Operation(summary = "Retorna uma listagem de todos os clientes cadastrados")
 	@ApiResponses(value = 
-			{@ApiResponse(responseCode = "200", description = "Lista de clientes")})
-	@RequestMapping(value = "/v1/cliente", method = RequestMethod.GET)
+			{@ApiResponse(responseCode = "200",description = "Lista de clientes")})
+	@RequestMapping(value = "/v1/cliente",method = RequestMethod.GET)
 	public ResponseEntity<List<Cliente>> listar() {
-		System.out.println("executando listar ");
-		// retorna a lista de clientes
-		return ResponseEntity.ok(listaCliente);
+		List<Cliente> resultado = clienteService.listar();		
+		return ResponseEntity.ok(resultado);
 	}
 	
-	@Operation(summary = "Deletar um cliente pelo id")
+	@Operation(summary = "Deletar um cliente pelo seu id")
 	@ApiResponses(value = 
-			{@ApiResponse(responseCode = "200", description = "Cliente deletado com sucesso"),
-			@ApiResponse(responseCode = "400", description = "Não encontrado o cliente para efetuar o delete")})
-	@RequestMapping(value = "/v1/cliente/{id}", method = RequestMethod.DELETE)
+	{@ApiResponse(responseCode = "200",description = "Cliente deletado com sucesso"),
+		@ApiResponse(responseCode = "400",description = "Não foi removido cliente")})
+	@RequestMapping(value = "/v1/cliente/{id}",method = RequestMethod.DELETE)
 	public ResponseEntity<Void> deletar(@PathVariable Integer id) {
-		System.out.println("executando deletar de cliente id " + id);
+		System.out.println("executando deletar de cliente id " + id );
 		// deleta o cliente pelo id, caso ele exista
-		boolean resultado = listaCliente.removeIf((obj) -> obj.getId().equals(id));
-		if (resultado == true) {
+		boolean resultado = clienteService.deletar(id);
+		if(resultado == true) {
 			return ResponseEntity.status(HttpStatus.OK).build();
 		}
+				
 		// retorna a lista de clientes
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 	}
-
-	@Operation(summary = "Retorna um true caso o cliente exista ou um false caso o cliente não existe")
-	@ApiResponses(value = 
-			{@ApiResponse(responseCode = "200", description = "true = Cliente existe"),
-			@ApiResponse(responseCode = "400", description = "false = Cliente n existe")})
-	@RequestMapping(value = "/v1/cliente/existe_cliente", method = RequestMethod.GET)
-	public ResponseEntity<Boolean> existeCliente(@RequestBody Cliente cliente) {
-
-		System.out.println("Verificando a existencia do Cliente id " + cliente.getNome());
-
-		for (Cliente clint : listaCliente) {
-			if (cliente.getId().equals(clint.getId())) {
-				return ResponseEntity.ok(true);
-			}
-		}
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
-	}
 	
-	@Operation(summary = "Retorna um cliente pelo o seu ID")
-	@ApiResponses(value = 
-			{@ApiResponse(responseCode = "200", description = "Cliente buscado com sucesso"),
-			@ApiResponse(responseCode = "400", description = "Não encontrado o cliente")})
-	@RequestMapping(value = "/v1/cliente/buscar_cliente", method = RequestMethod.GET)
-	public ResponseEntity<String> buscarCliente(@RequestBody Cliente cliente) {
-
-		System.out.println("Verificando a existencia do Cliente id " + cliente.getNome());
-
-		for (Cliente c : listaCliente) {
-			if (cliente.getId().equals(c.getId())) {
-				return ResponseEntity.ok(cliente.toString());
-			}
-		}
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("achamo n");
-	}
-
 	@Operation(summary = "Atualiza um cliente")
 	@ApiResponses(value = 
-			{@ApiResponse(responseCode = "200", description = "Cliente atualizado com sucesso"),
-			@ApiResponse(responseCode = "400", description = "Não encontrado o cliente para efetuar a atualização")})
-	@RequestMapping(value = "/v1/cliente", method = RequestMethod.PUT)
-	public ResponseEntity<String> atualizarCliente(@RequestBody Cliente cliente) {
-
-		System.out.println("Verificando a existencia do Cliente id " + cliente.getNome());
-
-		for (Cliente c : listaCliente) {
-			if (cliente.getId().equals(c.getId())) {
-				c.setNome(cliente.getNome());
-				c.setEmail(cliente.getEmail());
-				c.setCep(cliente.getCep());
-				c.setCpf(cliente.getCpf());
-				return ResponseEntity.ok(cliente.toString());
-			}
+	{@ApiResponse(responseCode = "200",description = "Cliente atualizado com sucesso"),
+		@ApiResponse(responseCode = "400",description = "Erro na atualização do cliente")})
+	@RequestMapping(value = "/v1/cliente",method = RequestMethod.PUT)
+	public ResponseEntity<String> atualizar(@RequestBody Cliente cliente) {
+		
+		boolean resultado = clienteService.atualizar(cliente);
+		if(resultado == true) {
+			return ResponseEntity.status(HttpStatus.OK).build();
+		}else {		
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 		}
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("atualizamo n");
+	}
+	
+	@Operation(summary = "Retorna true caso cliente exista ou false se não existir no sistema")
+	@ApiResponses(value = 
+			{@ApiResponse(responseCode = "200",description = "TRUE=existir ou FALSE=não existir")})
+	@RequestMapping(value = "/v1/cliente/existe-cliente/{id}",method = RequestMethod.GET)
+	public ResponseEntity<Boolean> existeCliente(@PathVariable Integer id) { 
+		boolean resultado = clienteService.existeCliente(id);
+		return ResponseEntity.ok(resultado);		
+	}
+	
+	@Operation(summary = "Retorna um cliente pelo seu ID.")
+	@ApiResponses(value = 
+	{@ApiResponse(responseCode = "200",description = "Cliente retornado com sucesso"),
+	@ApiResponse(responseCode = "204",description = "Não encontrado cliente")})
+	@RequestMapping(value = "/v1/cliente/buscar-cliente/{id}",method = RequestMethod.GET)
+	public ResponseEntity<Cliente> buscarCliente(@PathVariable Integer id) { 
+		
+		Cliente resultado = clienteService.buscarCliente(id);
+		if(resultado != null) {
+			return ResponseEntity.ok(resultado);
+		}else {		
+			return ResponseEntity.noContent().build();
+		}
 	}
 }
