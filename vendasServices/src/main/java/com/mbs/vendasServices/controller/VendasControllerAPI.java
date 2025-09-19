@@ -45,8 +45,11 @@ public class VendasControllerAPI {
 	public ResponseEntity<Double> totalVendas(Venda venda) {
 		System.out.println("Verificando o total de vendas");
 		for (Venda v : listaProduto) {
-			if (venda.getPrecoProduto() != null) {
-				double total = venda.getPrecoProduto() + venda.getPrecoProduto();
+			if (v.getCodCliente() != null) {
+				double contador = 0;
+				System.out.println("contador" + contador);
+				double total = contador+1;
+				System.out.println("total" + total);
 				return ResponseEntity.ok(total);
 			}
 		}
