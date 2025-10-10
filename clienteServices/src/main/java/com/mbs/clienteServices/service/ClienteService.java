@@ -46,7 +46,7 @@ public class ClienteService {
 	}
 	
 	
-	public Cliente buscarCliente(Integer id) { 
+	public Cliente buscarCliente(Integer id) {
 		return clienteRepository.buscarCliente(id);			
 	}
 
