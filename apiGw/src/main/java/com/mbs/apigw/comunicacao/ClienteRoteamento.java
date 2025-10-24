@@ -24,6 +24,8 @@ public interface ClienteRoteamento {
 	
 	@RequestMapping(value = "/v1/cliente",method = RequestMethod.GET)
 	public ResponseEntity<List<Cliente>> listar();
-		
+	
+	@RequestMapping(value = "/v1/cliente/buscar-cliente/{id}",method = RequestMethod.GET)
+	public ResponseEntity<Cliente> buscarCliente(@PathVariable Integer id); 
 
 }

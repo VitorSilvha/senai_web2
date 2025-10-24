@@ -1,6 +1,5 @@
 package com.mbs.apigw.controller;
 
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -33,15 +32,14 @@ public class ClienteController {
 	public ResponseEntity<String>salvar(@RequestBody Cliente cliente) {
 		System.out.println("Executando -salvar cliente-");
 		System.out.println("Chamando o cliente service; endpoint salvar");
-		ResponseEntity<String> salvar = clienteRoteamento.salvar(cliente);
-		return salvar;	
+		ResponseEntity<String> resultado = clienteRoteamento.salvar(cliente);
+		return resultado;	
 	}
 	
-	@RequestMapping(value = "/v1/cliente",method = RequestMethod.GET)
-	public ResponseEntity<List<Cliente>> listar() {
-		System.out.println("Executando -listar cliente-");
-		System.out.println("Chamando o cliente service; endpoint listar");
-		ResponseEntity<String> salvar = clienteRoteamento.salvar(cliente);
+	@RequestMapping(value = "/v1/api-gw/cliente/buscar-cliente/{id}",method = RequestMethod.GET)
+	public ResponseEntity<Cliente> buscarCliente(@PathVariable Integer id) {
+		ResponseEntity<Cliente> resultado = clienteRoteamento.buscarCliente(id);
+		return resultado;
 		
 	}
 	
