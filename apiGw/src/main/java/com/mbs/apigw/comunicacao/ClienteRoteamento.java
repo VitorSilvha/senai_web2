@@ -16,16 +16,21 @@ import com.mbs.apigw.entidades.Cliente;
 @FeignClient(value = "ClienteRoteamento", url = "http://localhost:9003/")
 public interface ClienteRoteamento {
 		
+	@RequestMapping(value = "/v1/cliente",method = RequestMethod.POST)
+	public ResponseEntity<String> salvar(@RequestBody Cliente cliente);
+	//TODO
+	@RequestMapping(value = "/v1/cliente/{id}",method = RequestMethod.DELETE)
+	public ResponseEntity<Void> deletar(@PathVariable Integer id);
+	
+	@RequestMapping(value = "/v1/cliente",method = RequestMethod.PUT)
+	public ResponseEntity<String> atualizar(@RequestBody Cliente cliente);
+	
 	@RequestMapping(value = "/v1/cliente/existe-cliente/{id}",method = RequestMethod.GET)
 	public ResponseEntity<Boolean> existeCliente(@PathVariable Integer id);
 	
-	@RequestMapping(value = "/v1/cliente",method = RequestMethod.POST)
-	public ResponseEntity<String> salvar(@RequestBody Cliente cliente);
+	@RequestMapping(value = "/v1/cliente/buscar-cliente/{id}",method = RequestMethod.GET)
+	public ResponseEntity<Cliente> buscarCliente(@PathVariable Integer id); 
 	
 	@RequestMapping(value = "/v1/cliente",method = RequestMethod.GET)
 	public ResponseEntity<List<Cliente>> listar();
-	
-	@RequestMapping(value = "/v1/cliente/buscar-cliente/{id}",method = RequestMethod.GET)
-	public ResponseEntity<Cliente> buscarCliente(@PathVariable Integer id); 
-
 }
